@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.vercel/
+
+# Local environment files (Supabase keys go in Vercel / StackBlitz settings, never in git)
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
