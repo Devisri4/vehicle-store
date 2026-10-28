@@ -31,7 +31,15 @@ export default async function handler(req, res) {
   const callerId = callerData.user.id;
 
   // 2. Only admins may delete users
-  const { data: callerProfile } = await admin.from('profiles').select('role').eq('id', callerId).maybeSingle();
+  const { data: callerProfile, error: roleError } = await admin
+    .from('profiles')
+    .select('role')
+    .eq('id', callerId)
+    .maybeSingle();
+  if (roleError) {
+    console.error('delete-user: role lookup failed', roleError);
+    return res.status(500).json({ error: 'Could not check your permissions.' });
+  }
   if (callerProfile?.role !== 'admin') return res.status(403).json({ error: 'Admins only.' });
 
   // 3. Validate the target
