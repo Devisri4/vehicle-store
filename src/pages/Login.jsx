@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import AuthCard, { FormMessage, inputClass } from '../components/AuthCard.jsx';
+import AuthLayout from '../components/AuthLayout.jsx';
+import { Field, FormMessage, primaryButtonClass } from '../components/ui.jsx';
 import { dashboardPath, useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 
@@ -36,44 +37,44 @@ export default function Login() {
   }
 
   return (
-    <AuthCard
-      background="bg-gradient-to-r from-[#f5f7fa] to-[#c3cfe2]"
-      title="Welcome Back"
-      subtitle="Login to explore trusted second-hand vehicles"
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Log in to explore trusted second-hand vehicles."
       footer={
-        <Link to="/signup" className="hover:text-brand">
-          Don&apos;t have an account? Sign Up
-        </Link>
+        <>
+          Don&apos;t have an account?{' '}
+          <Link to="/signup" className="font-semibold text-brand-700 hover:text-brand-800">
+            Sign up
+          </Link>
+        </>
       }
     >
-      <form onSubmit={handleSubmit}>
-        <input
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Field
+          label="Email address"
+          id="email"
           type="email"
-          placeholder="Email"
           autoComplete="email"
+          placeholder="you@example.com"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={inputClass}
         />
-        <input
+        <Field
+          label="Password"
+          id="password"
           type="password"
-          placeholder="Password"
           autoComplete="current-password"
+          placeholder="••••••••"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={inputClass}
         />
-        <button
-          type="submit"
-          disabled={submitting || !supabase}
-          className="mt-2 w-full rounded-lg bg-[#2e86de] py-3 text-base text-white transition hover:bg-[#1e6ab7] disabled:opacity-60"
-        >
-          {submitting ? 'Logging in…' : 'Login'}
-        </button>
         <FormMessage message={message} />
+        <button type="submit" disabled={submitting || !supabase} className={`${primaryButtonClass} w-full`}>
+          {submitting ? 'Logging in…' : 'Log in'}
+        </button>
       </form>
-    </AuthCard>
+    </AuthLayout>
   );
 }

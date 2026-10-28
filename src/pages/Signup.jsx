@@ -1,14 +1,21 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import AuthCard, { FormMessage, inputClass } from '../components/AuthCard.jsx';
+import { ShoppingBag, Store } from 'lucide-react';
+import AuthLayout from '../components/AuthLayout.jsx';
+import { Field, FormMessage, primaryButtonClass } from '../components/ui.jsx';
 import { dashboardPath, useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
+
+const ROLES = [
+  { value: 'buyer', label: 'Buy', hint: 'Browse and contact sellers', icon: ShoppingBag },
+  { value: 'seller', label: 'Sell', hint: 'List and manage vehicles', icon: Store },
+];
 
 // Port of the original client/signup.html. Passwords are hashed and stored by Supabase Auth.
 // The role is only a request: the database trigger accepts 'buyer' or 'seller', never 'admin'.
 export default function Signup() {
   const { session, profile, loading } = useAuth();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'buyer' });
   const [message, setMessage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -48,60 +55,85 @@ export default function Signup() {
   }
 
   return (
-    <AuthCard
-      background="bg-gradient-to-r from-[#e0f7fa] to-[#fce4ec]"
-      title="Create Your Account"
-      subtitle="Sign up to explore verified vehicles and trusted sellers"
+    <AuthLayout
+      title="Create your account"
+      subtitle="Join to buy or sell trusted pre-owned vehicles."
       footer={
-        <Link to="/login" className="hover:text-brand">
-          Already have an account? Login
-        </Link>
+        <>
+          Already have an account?{' '}
+          <Link to="/login" className="font-semibold text-brand-700 hover:text-brand-800">
+            Log in
+          </Link>
+        </>
       }
     >
-      <form onSubmit={handleSubmit}>
-        <input
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <fieldset>
+          <legend className="mb-1.5 block text-sm font-medium text-gray-700">I want to</legend>
+          <div className="grid grid-cols-2 gap-3">
+            {ROLES.map((role) => {
+              const Icon = role.icon;
+              const selected = form.role === role.value;
+              return (
+                <label
+                  key={role.value}
+                  className={`flex cursor-pointer flex-col rounded-lg border p-3 transition ${
+                    selected ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600' : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={role.value}
+                    checked={selected}
+                    onChange={update('role')}
+                    className="sr-only"
+                  />
+                  <Icon className={`h-5 w-5 ${selected ? 'text-brand-700' : 'text-gray-500'}`} aria-hidden="true" />
+                  <span className="mt-2 text-sm font-semibold text-gray-900">{role.label}</span>
+                  <span className="text-xs text-gray-500">{role.hint}</span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+        <Field
+          label="Full name"
+          id="name"
           type="text"
-          placeholder="Full Name"
           autoComplete="name"
+          placeholder="Your name"
           required
           maxLength={100}
           value={form.name}
           onChange={update('name')}
-          className={inputClass}
         />
-        <input
+        <Field
+          label="Email address"
+          id="email"
           type="email"
-          placeholder="Email Address"
           autoComplete="email"
+          placeholder="you@example.com"
           required
           value={form.email}
           onChange={update('email')}
-          className={inputClass}
         />
-        <input
+        <Field
+          label="Password"
+          id="password"
           type="password"
-          placeholder="Password (min. 8 characters)"
           autoComplete="new-password"
+          placeholder="At least 8 characters"
           required
           minLength={8}
           value={form.password}
           onChange={update('password')}
-          className={inputClass}
         />
-        <select required value={form.role} onChange={update('role')} className={`${inputClass} bg-white`}>
-          <option value="">Select Role</option>
-          <option value="buyer">Buyer</option>
-          <option value="seller">Seller</option>
-        </select>
-        <button
-          type="submit"
-          disabled={submitting || !supabase}
-          className="mt-2 w-full rounded-lg bg-[#00796b] py-3 text-base text-white transition hover:bg-[#004d40] disabled:opacity-60"
-        >
-          {submitting ? 'Creating account…' : 'Register'}
-        </button>
         <FormMessage message={message} />
+        <button type="submit" disabled={submitting || !supabase} className={`${primaryButtonClass} w-full`}>
+          {submitting ? 'Creating account…' : 'Create account'}
+        </button>
       </form>
-    </AuthCard>
+    </AuthLayout>
   );
 }

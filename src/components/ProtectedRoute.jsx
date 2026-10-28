@@ -17,5 +17,5 @@ export default function ProtectedRoute({ roles }) {
 }
 
 function Notice({ text }) {
-  return <p className="p-10 text-center text-gray-600">{text}</p>;
+  return <p className="py-24 text-center text-sm text-gray-500">{text}</p>;
 }
