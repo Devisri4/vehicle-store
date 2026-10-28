@@ -5,10 +5,12 @@ import { EmptyState, PageHeader, Skeleton, primaryButtonClass } from '../compone
 import VehicleForm from '../components/VehicleForm.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { removeVehicleImages, resolvePhotoPaths, toVehicleRow } from '../lib/vehicles.js';
 
 // Replaces the original client/edit-vehicle.html; photos can now be changed too.
 export default function EditVehicle() {
+  usePageTitle('Edit vehicle');
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();

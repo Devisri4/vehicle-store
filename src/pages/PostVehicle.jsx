@@ -3,10 +3,12 @@ import { PageHeader } from '../components/ui.jsx';
 import VehicleForm from '../components/VehicleForm.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { removeVehicleImages, resolvePhotoPaths, toVehicleRow } from '../lib/vehicles.js';
 
 // Replaces the original client/post-vehicle.html. seller_id is set by the database to the logged-in user.
 export default function PostVehicle() {
+  usePageTitle('Post a vehicle');
   const { user } = useAuth();
   const navigate = useNavigate();
 

@@ -4,7 +4,6 @@ import { CarFront, Eye, Images, Pencil, Plus, Trash2, TriangleAlert } from 'luci
 import {
   Badge,
   EmptyState,
-  FormMessage,
   ListSkeleton,
   PageHeader,
   cardClass,
@@ -14,25 +13,29 @@ import {
 } from '../components/ui.jsx';
 import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useFeedback } from '../context/FeedbackContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { formatDate, formatPrice, removeVehicleImages } from '../lib/vehicles.js';
 
 // Replaces the original client/seller-dashboard.html (which was hard-coded to seller id 1)
 export default function MyVehicles() {
+  usePageTitle('My vehicles');
   const { user } = useAuth();
+  const { confirm, toast } = useFeedback();
   const location = useLocation();
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
   const [status, setStatus] = useState('loading');
   const [deletingId, setDeletingId] = useState(null);
-  const [message, setMessage] = useState(
-    location.state?.flash ? { type: 'success', text: location.state.flash } : null,
-  );
 
-  // Clear the one-time success message so it does not reappear on refresh
+  // Show the one-time success message from Post/Edit, then clear it so it does not reappear on refresh
+  const flash = location.state?.flash;
   useEffect(() => {
-    if (location.state?.flash) navigate(location.pathname, { replace: true, state: null });
-  }, [location, navigate]);
+    if (!flash) return;
+    toast(flash);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [flash, location.pathname, navigate, toast]);
 
   useEffect(() => {
     supabase
@@ -52,18 +55,24 @@ export default function MyVehicles() {
   }, [user.id]);
 
   async function handleDelete(vehicle) {
-    if (!window.confirm(`Delete "${vehicle.title}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete "${vehicle.title}"?`,
+      message: 'The listing, its photos and any messages about it will be permanently removed.',
+      confirmLabel: 'Delete listing',
+      destructive: true,
+    });
+    if (!ok) return;
     setDeletingId(vehicle.id);
     const { data, error } = await supabase.from('vehicles').delete().eq('id', vehicle.id).select('id');
     setDeletingId(null);
     if (error || data.length === 0) {
       console.error('Delete failed:', error);
-      setMessage({ type: 'error', text: 'Could not delete this vehicle. Please try again.' });
+      toast('Could not delete this vehicle. Please try again.', 'error');
       return;
     }
     await removeVehicleImages(vehicle.image_paths);
     setVehicles((current) => current.filter((v) => v.id !== vehicle.id));
-    setMessage({ type: 'success', text: `"${vehicle.title}" was deleted.` });
+    toast(`"${vehicle.title}" was deleted.`);
   }
 
   const postButton = (
@@ -79,12 +88,6 @@ export default function MyVehicles() {
         description="Manage the vehicles you have listed for sale."
         actions={status === 'ready' && vehicles.length > 0 ? postButton : null}
       />
-
-      {message && (
-        <div className="mb-6">
-          <FormMessage message={message} />
-        </div>
-      )}
 
       {status === 'loading' && <ListSkeleton />}
 

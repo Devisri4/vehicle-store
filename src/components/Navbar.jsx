@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Logo from './Logo.jsx';
 import { primaryButtonClass } from './ui.jsx';
 
+const GUEST_LINKS = [{ to: '/dashboard', label: 'Browse' }];
+
 const LINKS_BY_ROLE = {
   buyer: [{ to: '/dashboard', label: 'Browse' }],
   seller: [
@@ -64,7 +66,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
-  const links = profile ? (LINKS_BY_ROLE[profile.role] ?? []) : [];
+  const links = profile ? (LINKS_BY_ROLE[profile.role] ?? GUEST_LINKS) : GUEST_LINKS;
 
   // Close the mobile menu whenever the page changes
   useEffect(() => setOpen(false), [pathname]);

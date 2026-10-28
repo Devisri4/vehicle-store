@@ -4,7 +4,6 @@ import { CarFront, MessageSquare, Store, Trash2, TriangleAlert, Users } from 'lu
 import {
   Badge,
   EmptyState,
-  FormMessage,
   PageHeader,
   Skeleton,
   TableSkeleton,
@@ -13,7 +12,9 @@ import {
 } from '../components/ui.jsx';
 import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useFeedback } from '../context/FeedbackContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { formatDate, formatPrice, removeVehicleImages } from '../lib/vehicles.js';
 
 const TABS = [
@@ -42,12 +43,13 @@ async function deleteUserAccount(userId) {
 
 // Replaces the original client/admin.html
 export default function AdminPanel() {
+  usePageTitle('Admin panel');
   const { user } = useAuth();
+  const { confirm, toast } = useFeedback();
   const [tab, setTab] = useState('users');
   const [data, setData] = useState({ users: [], vehicles: [], messages: [] });
   const [status, setStatus] = useState('loading');
   const [busyId, setBusyId] = useState(null);
-  const [message, setMessage] = useState(null);
 
   const load = useCallback(async () => {
     const [users, vehicles, messages] = await Promise.all([
@@ -76,36 +78,41 @@ export default function AdminPanel() {
   }, [load]);
 
   async function handleDeleteUser(target) {
-    if (
-      !window.confirm(
-        `Delete ${target.name} (${target.email})?\n\nTheir account, vehicles, photos and messages will be permanently removed.`,
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: `Delete ${target.name}?`,
+      message: `${target.email}\n\nTheir account, vehicles, photos and messages will be permanently removed.`,
+      confirmLabel: 'Delete user',
+      destructive: true,
+    });
+    if (!ok) return;
     setBusyId(target.id);
-    setMessage(null);
     try {
       await deleteUserAccount(target.id);
-      setMessage({ type: 'success', text: `${target.name} was deleted.` });
+      toast(`${target.name} was deleted.`);
       await load();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      toast(err.message, 'error');
     } finally {
       setBusyId(null);
     }
   }
 
   async function handleDeleteVehicle(vehicle) {
-    if (!window.confirm(`Delete "${vehicle.title}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete "${vehicle.title}"?`,
+      message: 'The listing, its photos and any messages about it will be permanently removed.',
+      confirmLabel: 'Delete listing',
+      destructive: true,
+    });
+    if (!ok) return;
     setBusyId(vehicle.id);
-    setMessage(null);
     const { data: deleted, error } = await supabase.from('vehicles').delete().eq('id', vehicle.id).select('id');
     if (error || deleted.length === 0) {
       console.error('Delete failed:', error);
-      setMessage({ type: 'error', text: 'Could not delete this vehicle. Please try again.' });
+      toast('Could not delete this vehicle. Please try again.', 'error');
     } else {
       await removeVehicleImages(vehicle.image_paths);
-      setMessage({ type: 'success', text: `"${vehicle.title}" was deleted.` });
+      toast(`"${vehicle.title}" was deleted.`);
       await load();
     }
     setBusyId(null);
@@ -172,12 +179,6 @@ export default function AdminPanel() {
               </button>
             ))}
           </div>
-
-          {message && (
-            <div className="mb-6">
-              <FormMessage message={message} />
-            </div>
-          )}
 
           <div className={`${cardClass} overflow-x-auto`}>
             {tab === 'users' && (

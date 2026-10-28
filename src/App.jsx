@@ -22,12 +22,9 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
 
       <Route element={<AppLayout />}>
+        {/* Public: visitors can browse and view listings; contacting a seller still needs a login */}
+        <Route path="/dashboard" element={<Browse />} />
         <Route path="/vehicles/:id" element={<VehicleDetail />} />
-
-        {/* Any logged-in user */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Browse />} />
-        </Route>
 
         <Route element={<ProtectedRoute roles={['seller']} />}>
           <Route path="/seller" element={<MyVehicles />} />

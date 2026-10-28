@@ -4,6 +4,7 @@ import ConnectionStatus from '../components/ConnectionStatus.jsx';
 import Footer from '../components/Footer.jsx';
 import Navbar from '../components/Navbar.jsx';
 import { dashboardPath, useAuth } from '../context/AuthContext.jsx';
+import usePageTitle from '../lib/usePageTitle.js';
 
 const STEPS = [
   { icon: Search, title: 'Browse listings', text: 'Explore second-hand cars and bikes with photos, prices and full details.' },
@@ -24,6 +25,7 @@ const ctaSecondary =
 
 // Landing page (replaces the original client/index.html)
 export default function Home() {
+  usePageTitle();
   const { profile } = useAuth();
 
   return (
@@ -56,11 +58,11 @@ export default function Home() {
                   </Link>
                 ) : (
                   <>
-                    <Link to="/signup" className={ctaPrimary}>
-                      Get started <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    <Link to="/dashboard" className={ctaPrimary}>
+                      Browse vehicles <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Link>
-                    <Link to="/login" className={ctaSecondary}>
-                      Log in
+                    <Link to="/signup" className={ctaSecondary}>
+                      Create free account
                     </Link>
                   </>
                 )}
@@ -82,7 +84,6 @@ export default function Home() {
                   alt="Blue sports coupe parked on a desert road at sunset"
                   width="1600"
                   height="1067"
-                  fetchpriority="high"
                   className="aspect-[4/3] w-full object-cover sm:aspect-[16/10]"
                 />
               </div>

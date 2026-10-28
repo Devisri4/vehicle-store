@@ -28,6 +28,17 @@ export default {
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
+      keyframes: {
+        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'pop-in': {
+          from: { opacity: '0', transform: 'translateY(6px) scale(0.98)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 150ms ease-out',
+        'pop-in': 'pop-in 180ms ease-out',
+      },
       boxShadow: {
         card: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
         'card-hover': '0 16px 32px -12px rgb(15 23 42 / 0.18), 0 4px 8px -4px rgb(15 23 42 / 0.06)',

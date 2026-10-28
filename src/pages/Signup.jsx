@@ -5,6 +5,7 @@ import AuthLayout from '../components/AuthLayout.jsx';
 import { Field, FormMessage, primaryButtonClass } from '../components/ui.jsx';
 import { dashboardPath, useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 
 const ROLES = [
   { value: 'buyer', label: 'Buy', hint: 'Browse and contact sellers', icon: ShoppingBag },
@@ -14,6 +15,7 @@ const ROLES = [
 // Port of the original client/signup.html. Passwords are hashed and stored by Supabase Auth.
 // The role is only a request: the database trigger accepts 'buyer' or 'seller', never 'admin'.
 export default function Signup() {
+  usePageTitle('Create account');
   const { session, profile, loading } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'buyer' });
   const [message, setMessage] = useState(null);

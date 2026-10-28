@@ -13,7 +13,9 @@ export const primaryButtonClass = `${buttonBase} bg-brand-700 text-white shadow-
 
 export const secondaryButtonClass = `${buttonBase} border border-gray-300 bg-white text-gray-700 shadow-sm hover:border-gray-400 hover:bg-gray-50`;
 
-export const dangerButtonClass = `${buttonBase} border border-red-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50`;
+export const destructiveButtonClass = `${buttonBase} bg-red-600 text-white shadow-sm hover:bg-red-700`;
+
+export const dangerButtonClass =`${buttonBase} border border-red-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50`;
 
 // Compact variants for row actions (tables, lists)
 export const smallButtonClass =

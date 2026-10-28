@@ -9,12 +9,14 @@ import {
 } from '../components/ui.jsx';
 import VehicleCard from '../components/VehicleCard.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { VEHICLE_TYPES } from '../lib/vehicles.js';
 
 const GRID = 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 // Replaces the original client/dashboard.html (buyer dashboard)
 export default function Browse() {
+  usePageTitle('Browse vehicles');
   const [vehicles, setVehicles] = useState([]);
   const [status, setStatus] = useState('loading');
   const [query, setQuery] = useState('');

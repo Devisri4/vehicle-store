@@ -18,6 +18,7 @@ import PhotoGallery from '../components/PhotoGallery.jsx';
 import { Badge, Card, EmptyState, Skeleton, primaryButtonClass } from '../components/ui.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { formatDate, formatPrice } from '../lib/vehicles.js';
 
 function DetailSkeleton() {
@@ -48,6 +49,7 @@ export default function VehicleDetail() {
   const location = useLocation();
   const [vehicle, setVehicle] = useState(null);
   const [status, setStatus] = useState('loading');
+  usePageTitle(status === 'missing' ? 'Vehicle not found' : vehicle?.title);
 
   useEffect(() => {
     supabase

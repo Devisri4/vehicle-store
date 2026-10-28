@@ -12,11 +12,13 @@ import {
 } from '../components/ui.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
+import usePageTitle from '../lib/usePageTitle.js';
 import { formatDate } from '../lib/vehicles.js';
 
 // Replaces the original client/seller-messages.html.
 // Only enquiries about this seller's own vehicles are fetched; RLS enforces the same rule.
 export default function SellerMessages() {
+  usePageTitle('Messages');
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState('loading');

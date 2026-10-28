@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MapPinOff } from 'lucide-react';
 import { EmptyState, primaryButtonClass } from '../components/ui.jsx';
+import usePageTitle from '../lib/usePageTitle.js';
 
 export default function NotFound() {
+  usePageTitle('Page not found');
   return (
     <div className="py-8">
       <EmptyState
