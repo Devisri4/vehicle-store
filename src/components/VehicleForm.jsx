@@ -237,7 +237,8 @@ export default function VehicleForm({ initial, existingImagePaths = [], submitLa
             )}
           </div>
           <p className="mt-3 text-xs text-gray-500">
-            Up to {MAX_PHOTOS} photos · JPG, PNG or WebP · max 5 MB each. The first photo is the cover.
+            Up to {MAX_PHOTOS} photos · JPG, PNG or WebP. Large photos are resized automatically. The first photo is
+            the cover. Use clear photos at least 1200px wide for the sharpest listing.
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 
 const AuthContext = createContext(null);
@@ -15,6 +15,8 @@ export function AuthProvider({ children }) {
   const [sessionReady, setSessionReady] = useState(!supabase);
   // Profile is stored with the user id it belongs to, so a stale profile is never shown for a new login
   const [profileState, setProfileState] = useState({ userId: null, profile: null });
+  // Bumped by refreshProfile() to re-read the profile after it changes (e.g. a new name)
+  const [profileVersion, setProfileVersion] = useState(0);
 
   useEffect(() => {
     if (!supabase) return;
@@ -48,7 +50,9 @@ export function AuthProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, profileVersion]);
+
+  const refreshProfile = useCallback(() => setProfileVersion((v) => v + 1), []);
 
   const profile = userId && profileState.userId === userId ? profileState.profile : null;
   const loading = !sessionReady || (Boolean(userId) && profileState.userId !== userId);
@@ -56,7 +60,7 @@ export function AuthProvider({ children }) {
   const signOut = () => supabase.auth.signOut();
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, profile, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

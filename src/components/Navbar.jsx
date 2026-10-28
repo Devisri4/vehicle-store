@@ -8,7 +8,10 @@ import { primaryButtonClass } from './ui.jsx';
 const GUEST_LINKS = [{ to: '/dashboard', label: 'Browse' }];
 
 const LINKS_BY_ROLE = {
-  buyer: [{ to: '/dashboard', label: 'Browse' }],
+  buyer: [
+    { to: '/dashboard', label: 'Browse' },
+    { to: '/enquiries', label: 'My Enquiries' },
+  ],
   seller: [
     { to: '/dashboard', label: 'Browse' },
     { to: '/seller', label: 'My Vehicles' },
@@ -49,15 +52,20 @@ function Avatar({ name }) {
   );
 }
 
+// Clicking your name opens Account settings
 function UserBadge({ profile }) {
   return (
-    <div className="flex min-w-0 items-center gap-3">
+    <Link
+      to="/account"
+      title="Account settings"
+      className="-m-1.5 flex min-w-0 items-center gap-3 rounded-xl p-1.5 transition hover:bg-gray-100"
+    >
       <Avatar name={profile.name} />
       <div className="min-w-0 leading-tight">
         <p className="max-w-[10rem] truncate text-sm font-semibold text-gray-900">{profile.name}</p>
-        <p className="text-xs capitalize text-gray-500">{profile.role}</p>
+        <p className="text-xs capitalize text-gray-500">{profile.role} · Account</p>
       </div>
-    </div>
+    </Link>
   );
 }
 

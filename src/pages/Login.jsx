@@ -72,16 +72,23 @@ export default function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Field
-          label="Password"
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div>
+          <Field
+            label="Password"
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="mt-2 text-right">
+            <Link to="/forgot-password" className="text-sm font-medium text-brand-700 hover:text-brand-800">
+              Forgot password?
+            </Link>
+          </div>
+        </div>
         <FormMessage message={message} />
         <button type="submit" disabled={Boolean(submitting) || !supabase} className={`${primaryButtonClass} w-full`}>
           {submitting === 'form' ? 'Logging in…' : 'Log in'}
