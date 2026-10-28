@@ -5,7 +5,7 @@ import { EmptyState, FormMessage, PageHeader, primaryButtonClass } from '../comp
 import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
-import { formatDate, formatPrice, removeVehicleImage } from '../lib/vehicles.js';
+import { formatDate, formatPrice, removeVehicleImages } from '../lib/vehicles.js';
 
 const actionClass =
   'inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50';
@@ -30,7 +30,7 @@ export default function MyVehicles() {
   useEffect(() => {
     supabase
       .from('vehicles')
-      .select('id, title, price, year, location, type, condition, image_path, created_at')
+      .select('id, title, price, year, location, type, condition, image_paths, created_at')
       .eq('seller_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
@@ -54,7 +54,7 @@ export default function MyVehicles() {
       setMessage({ type: 'error', text: 'Could not delete this vehicle. Please try again.' });
       return;
     }
-    await removeVehicleImage(vehicle.image_path);
+    await removeVehicleImages(vehicle.image_paths);
     setVehicles((current) => current.filter((v) => v.id !== vehicle.id));
     setMessage({ type: 'success', text: `"${vehicle.title}" was deleted.` });
   }
@@ -102,7 +102,7 @@ export default function MyVehicles() {
               className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
             >
               <VehicleImage
-                path={vehicle.image_path}
+                path={vehicle.image_paths[0]}
                 alt={vehicle.title}
                 className="aspect-[4/3] w-full rounded-lg sm:w-40"
               />

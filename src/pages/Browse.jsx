@@ -15,7 +15,7 @@ export default function Browse() {
   useEffect(() => {
     supabase
       .from('vehicles')
-      .select('id, title, price, year, location, type, condition, image_path, created_at')
+      .select('id, title, price, year, location, type, condition, image_paths, created_at')
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) {

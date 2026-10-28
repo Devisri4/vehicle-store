@@ -5,9 +5,9 @@ import { EmptyState, PageHeader, primaryButtonClass } from '../components/ui.jsx
 import VehicleForm from '../components/VehicleForm.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
-import { removeVehicleImage, toVehicleRow, uploadVehicleImage } from '../lib/vehicles.js';
+import { removeVehicleImages, resolvePhotoPaths, toVehicleRow } from '../lib/vehicles.js';
 
-// Replaces the original client/edit-vehicle.html; the photo can now be replaced too.
+// Replaces the original client/edit-vehicle.html; photos can now be changed too.
 export default function EditVehicle() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -29,17 +29,19 @@ export default function EditVehicle() {
       });
   }, [id, user.id]);
 
-  async function handleSubmit(values, file) {
-    const newImagePath = file ? await uploadVehicleImage(user.id, file) : null;
-    const row = toVehicleRow(values);
-    if (newImagePath) row.image_path = newImagePath;
-
-    const { data, error } = await supabase.from('vehicles').update(row).eq('id', vehicle.id).select('id');
+  async function handleSubmit(values, photos) {
+    const { paths, uploaded } = await resolvePhotoPaths(user.id, photos);
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update({ ...toVehicleRow(values), image_paths: paths })
+      .eq('id', vehicle.id)
+      .select('id');
     if (error || data.length === 0) {
-      await removeVehicleImage(newImagePath);
+      await removeVehicleImages(uploaded);
       throw error ?? new Error('You can only edit your own vehicles.');
     }
-    if (newImagePath) await removeVehicleImage(vehicle.image_path);
+    // Delete photos the seller removed
+    await removeVehicleImages(vehicle.image_paths.filter((path) => !paths.includes(path)));
     navigate('/seller', { state: { flash: 'Vehicle updated.' } });
   }
 
@@ -72,7 +74,7 @@ export default function EditVehicle() {
           condition: vehicle.condition,
           description: vehicle.description,
         }}
-        existingImagePath={vehicle.image_path}
+        existingImagePaths={vehicle.image_paths}
         submitLabel="Save changes"
         cancelTo="/seller"
         onSubmit={handleSubmit}

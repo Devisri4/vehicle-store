@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, CarFront, MapPin, MessageSquare, Pencil } from 'lucide-react';
+import PhotoGallery from '../components/PhotoGallery.jsx';
 import { EmptyState, primaryButtonClass } from '../components/ui.jsx';
-import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import { formatDate, formatPrice } from '../lib/vehicles.js';
@@ -61,11 +61,7 @@ export default function VehicleDetail() {
 
       <div className="mt-6 grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <VehicleImage
-            path={vehicle.image_path}
-            alt={vehicle.title}
-            className="aspect-[4/3] w-full rounded-2xl border border-gray-200"
-          />
+          <PhotoGallery paths={vehicle.image_paths} title={vehicle.title} />
         </div>
 
         <div className="space-y-6 lg:col-span-2">
