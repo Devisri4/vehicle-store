@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CarFront, Eye, Images, Pencil, Plus, Trash2, TriangleAlert } from 'lucide-react';
+import { CarFront, Eye, Images, Pencil, Plus, RotateCcw, Tag, Trash2, TriangleAlert } from 'lucide-react';
 import {
   Badge,
   EmptyState,
@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useFeedback } from '../context/FeedbackContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import usePageTitle from '../lib/usePageTitle.js';
-import { formatDate, formatPrice, removeVehicleImages } from '../lib/vehicles.js';
+import { formatDate, formatPrice, removeVehicleImages, setVehicleStatus } from '../lib/vehicles.js';
 
 // Replaces the original client/seller-dashboard.html (which was hard-coded to seller id 1)
 export default function MyVehicles() {
@@ -28,6 +28,7 @@ export default function MyVehicles() {
   const [vehicles, setVehicles] = useState([]);
   const [status, setStatus] = useState('loading');
   const [deletingId, setDeletingId] = useState(null);
+  const [togglingId, setTogglingId] = useState(null);
 
   // Show the one-time success message from Post/Edit, then clear it so it does not reappear on refresh
   const flash = location.state?.flash;
@@ -40,7 +41,7 @@ export default function MyVehicles() {
   useEffect(() => {
     supabase
       .from('vehicles')
-      .select('id, title, price, year, location, type, condition, image_paths, created_at')
+      .select('id, title, price, year, location, type, condition, image_paths, status, created_at')
       .eq('seller_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
@@ -73,6 +74,27 @@ export default function MyVehicles() {
     await removeVehicleImages(vehicle.image_paths);
     setVehicles((current) => current.filter((v) => v.id !== vehicle.id));
     toast(`"${vehicle.title}" was deleted.`);
+  }
+
+  async function handleToggleSold(vehicle) {
+    const nextStatus = vehicle.status === 'sold' ? 'available' : 'sold';
+    if (nextStatus === 'sold') {
+      const ok = await confirm({
+        title: `Mark "${vehicle.title}" as sold?`,
+        message: 'It will be hidden from Browse and buyers can no longer send new enquiries. You can undo this.',
+        confirmLabel: 'Mark as sold',
+      });
+      if (!ok) return;
+    }
+    setTogglingId(vehicle.id);
+    const changed = await setVehicleStatus(vehicle.id, nextStatus);
+    setTogglingId(null);
+    if (!changed) {
+      toast('Could not update the listing. Please try again.', 'error');
+      return;
+    }
+    setVehicles((current) => current.map((v) => (v.id === vehicle.id ? { ...v, status: nextStatus } : v)));
+    toast(nextStatus === 'sold' ? `"${vehicle.title}" marked as sold.` : `"${vehicle.title}" is available again.`);
   }
 
   const postButton = (
@@ -112,7 +134,11 @@ export default function MyVehicles() {
               className={`${cardClass} flex flex-col gap-5 p-4 transition hover:border-gray-300 hover:shadow-card-hover sm:flex-row sm:items-center`}
             >
               <div className="relative shrink-0 overflow-hidden rounded-xl sm:w-44">
-                <VehicleImage path={vehicle.image_paths[0]} alt={vehicle.title} className="aspect-[4/3] w-full" />
+                <VehicleImage
+                  path={vehicle.image_paths[0]}
+                  alt={vehicle.title}
+                  className={`aspect-[4/3] w-full ${vehicle.status === 'sold' ? 'opacity-60 grayscale' : ''}`}
+                />
                 {vehicle.image_paths.length > 1 && (
                   <Badge tone="dark" className="absolute bottom-2 right-2">
                     <Images className="h-3.5 w-3.5" aria-hidden="true" /> {vehicle.image_paths.length}
@@ -121,6 +147,7 @@ export default function MyVehicles() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
+                  {vehicle.status === 'sold' ? <Badge tone="dark">Sold</Badge> : <Badge tone="green">Available</Badge>}
                   <Badge tone="brand">{vehicle.type}</Badge>
                   <Badge tone="neutral">{vehicle.condition}</Badge>
                 </div>
@@ -137,6 +164,22 @@ export default function MyVehicles() {
                 <Link to={`/vehicles/${vehicle.id}/edit`} className={smallButtonClass}>
                   <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => handleToggleSold(vehicle)}
+                  disabled={togglingId === vehicle.id}
+                  className={smallButtonClass}
+                >
+                  {vehicle.status === 'sold' ? (
+                    <>
+                      <RotateCcw className="h-4 w-4" aria-hidden="true" /> Relist
+                    </>
+                  ) : (
+                    <>
+                      <Tag className="h-4 w-4" aria-hidden="true" /> Mark sold
+                    </>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(vehicle)}

@@ -101,6 +101,13 @@ export async function resolvePhotoPaths(userId, photos) {
   }
 }
 
+// Marks a listing 'sold' or 'available'. RLS only lets the owner change it; returns false if nothing changed.
+export async function setVehicleStatus(vehicleId, status) {
+  const { data, error } = await supabase.from('vehicles').update({ status }).eq('id', vehicleId).select('id');
+  if (error) console.error('Status update failed:', error);
+  return !error && data.length > 0;
+}
+
 // Only the columns a seller is allowed to write (matches the column grants in the database)
 export function toVehicleRow(values) {
   return {

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Send, TriangleAlert } from 'lucide-react';
-import { EmptyState, ListSkeleton, PageHeader, cardClass, primaryButtonClass } from '../components/ui.jsx';
+import ConversationThread from '../components/ConversationThread.jsx';
+import { Badge, EmptyState, ListSkeleton, PageHeader, cardClass, primaryButtonClass } from '../components/ui.jsx';
 import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { loadReplies } from '../lib/replies.js';
 import { supabase } from '../lib/supabase.js';
 import usePageTitle from '../lib/usePageTitle.js';
 import { formatDate, formatPrice } from '../lib/vehicles.js';
@@ -14,27 +16,37 @@ export default function MyEnquiries() {
   const { user } = useAuth();
   const [enquiries, setEnquiries] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [replies, setReplies] = useState({});
 
   useEffect(() => {
     supabase
       .from('messages')
-      .select('id, message, created_at, vehicle:vehicles(id, title, price, location, image_paths)')
+      .select(
+        'id, sender_id, sender_name, message, created_at, vehicle:vehicles(id, title, price, location, image_paths, status)',
+      )
       .eq('sender_id', user.id)
       .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error) {
           console.error('Failed to load enquiries:', error);
           setStatus('error');
-        } else {
-          setEnquiries(data);
-          setStatus('ready');
+          return;
         }
+        setReplies(await loadReplies(data.map((m) => m.id)));
+        setEnquiries(data);
+        setStatus('ready');
       });
   }, [user.id]);
 
+  const addReply = (reply) =>
+    setReplies((current) => ({ ...current, [reply.message_id]: [...(current[reply.message_id] ?? []), reply] }));
+
   return (
     <>
-      <PageHeader title="My enquiries" description="Messages you have sent to sellers. Replies arrive by email." />
+      <PageHeader
+        title="My enquiries"
+        description="Messages you have sent to sellers. Sellers can reply here or by email."
+      />
 
       {status === 'loading' && <ListSkeleton />}
 
@@ -80,12 +92,19 @@ export default function MyEnquiries() {
                   </Link>
                   <span className="text-xs text-gray-400 sm:shrink-0">Sent {formatDate(e.created_at)}</span>
                 </div>
-                <p className="mt-0.5 text-sm text-gray-500">
+                <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-gray-500">
                   {formatPrice(e.vehicle.price)} · {e.vehicle.location}
+                  {e.vehicle.status === 'sold' && <Badge tone="dark">Sold</Badge>}
                 </p>
                 <p className="mt-3 whitespace-pre-line rounded-xl bg-gray-50 p-4 text-sm leading-relaxed text-gray-700 ring-1 ring-inset ring-gray-100">
                   {e.message}
                 </p>
+                <ConversationThread
+                  message={e}
+                  replies={replies[e.id]}
+                  currentUserId={user.id}
+                  onReplySent={addReply}
+                />
               </div>
             </li>
           ))}

@@ -13,6 +13,7 @@ import MyVehicles from './pages/MyVehicles.jsx';
 import NotFound from './pages/NotFound.jsx';
 import PostVehicle from './pages/PostVehicle.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import SavedVehicles from './pages/SavedVehicles.jsx';
 import SellerMessages from './pages/SellerMessages.jsx';
 import Signup from './pages/Signup.jsx';
 import VehicleDetail from './pages/VehicleDetail.jsx';
@@ -36,6 +37,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<Account />} />
           <Route path="/enquiries" element={<MyEnquiries />} />
+          <Route path="/saved" element={<SavedVehicles />} />
         </Route>
 
         <Route element={<ProtectedRoute roles={['seller']} />}>

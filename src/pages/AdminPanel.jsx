@@ -56,7 +56,7 @@ export default function AdminPanel() {
       supabase.from('profiles').select('id, name, email, role, created_at').order('created_at', { ascending: false }),
       supabase
         .from('vehicles')
-        .select('id, title, price, image_paths, created_at, seller:profiles(name, email)')
+        .select('id, title, price, image_paths, status, created_at, seller:profiles(name, email)')
         .order('created_at', { ascending: false }),
       supabase
         .from('messages')
@@ -97,6 +97,30 @@ export default function AdminPanel() {
     }
   }
 
+  // Uses the admin_set_role() database function, which re-checks admin rights and only allows buyer/seller
+  async function handleRoleChange(target, newRole) {
+    if (newRole === target.role) return;
+    const ok = await confirm({
+      title: `Make ${target.name} a ${newRole}?`,
+      message:
+        newRole === 'buyer'
+          ? 'They will no longer be able to post vehicles. Their existing listings stay online.'
+          : 'They will be able to post and manage their own vehicle listings.',
+      confirmLabel: `Make ${newRole}`,
+    });
+    if (!ok) return;
+    setBusyId(target.id);
+    const { error } = await supabase.rpc('admin_set_role', { target: target.id, new_role: newRole });
+    setBusyId(null);
+    if (error) {
+      console.error('Role change failed:', error);
+      toast(error.message || 'Could not change the role.', 'error');
+      return;
+    }
+    toast(`${target.name} is now a ${newRole}.`);
+    await load();
+  }
+
   async function handleDeleteVehicle(vehicle) {
     const ok = await confirm({
       title: `Delete "${vehicle.title}"?`,
@@ -122,7 +146,7 @@ export default function AdminPanel() {
   const stats = [
     { label: 'Users', value: counts.users, icon: Users },
     { label: 'Sellers', value: data.users.filter((u) => u.role === 'seller').length, icon: Store },
-    { label: 'Active listings', value: counts.vehicles, icon: CarFront },
+    { label: 'Active listings', value: data.vehicles.filter((v) => v.status !== 'sold').length, icon: CarFront },
     { label: 'Messages', value: counts.messages, icon: MessageSquare },
   ];
 
@@ -203,9 +227,22 @@ export default function AdminPanel() {
                       </td>
                       <td className={tdClass}>{u.email}</td>
                       <td className={tdClass}>
-                        <Badge tone={ROLE_TONES[u.role]} className="capitalize">
-                          {u.role}
-                        </Badge>
+                        {u.role === 'admin' || u.id === user.id ? (
+                          <Badge tone={ROLE_TONES[u.role]} className="capitalize">
+                            {u.role}
+                          </Badge>
+                        ) : (
+                          <select
+                            aria-label={`Role for ${u.name}`}
+                            value={u.role}
+                            disabled={busyId === u.id}
+                            onChange={(e) => handleRoleChange(u, e.target.value)}
+                            className="rounded-md border border-gray-300 bg-white py-1 pl-2 pr-7 text-sm text-gray-700 shadow-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20 disabled:opacity-60"
+                          >
+                            <option value="buyer">Buyer</option>
+                            <option value="seller">Seller</option>
+                          </select>
+                        )}
                       </td>
                       <td className={`${tdClass} whitespace-nowrap`}>{formatDate(u.created_at)}</td>
                       <td className={`${tdClass} text-right`}>
@@ -250,6 +287,7 @@ export default function AdminPanel() {
                           <Link to={`/vehicles/${v.id}`} className="flex items-center gap-3 hover:text-brand-700">
                             <VehicleImage path={v.image_paths[0]} alt="" className="aspect-[4/3] w-16 shrink-0 rounded-md" />
                             <span className="font-medium text-gray-900">{v.title}</span>
+                            {v.status === 'sold' && <Badge tone="dark">Sold</Badge>}
                           </Link>
                         </td>
                         <td className={tdClass}>

@@ -15,7 +15,7 @@ import { VEHICLE_TYPES } from '../lib/vehicles.js';
 
 const GRID = 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 const PAGE_SIZE = 12;
-const COLUMNS = 'id, title, price, year, location, type, condition, image_paths, created_at';
+const COLUMNS = 'id, title, price, year, location, type, condition, image_paths, status, created_at';
 
 const SORTS = {
   newest: { label: 'Newest first', column: 'created_at', ascending: false },
@@ -24,8 +24,8 @@ const SORTS = {
   year_desc: { label: 'Year: newest', column: 'year', ascending: false },
 };
 
-// Filters live in the URL (?q=&type=&sort=&min=&max=&year=) so results can be shared and survive Back.
-const DEFAULTS = { q: '', type: 'All', sort: 'newest', min: '', max: '', year: '' };
+// Filters live in the URL (?q=&type=&sort=&min=&max=&year=&sold=1) so results can be shared and survive Back.
+const DEFAULTS = { q: '', type: 'All', sort: 'newest', min: '', max: '', year: '', sold: '' };
 
 function readFilters(params) {
   const filters = { ...DEFAULTS };
@@ -40,6 +40,7 @@ const toNumber = (text) => (text === '' || Number.isNaN(Number(text)) ? null : N
 
 function buildQuery(filters, page) {
   let query = supabase.from('vehicles').select(COLUMNS, { count: 'exact' });
+  if (filters.sold !== '1') query = query.eq('status', 'available');
   if (filters.type !== 'All') query = query.eq('type', filters.type);
   const q = cleanSearch(filters.q);
   if (q) query = query.or(`title.ilike.%${q}%,location.ilike.%${q}%`);
@@ -80,7 +81,7 @@ export default function Browse() {
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState('loading');
   const [loadingMore, setLoadingMore] = useState(false);
-  const [showMore, setShowMore] = useState(() => Boolean(filters.min || filters.max || filters.year));
+  const [showMore, setShowMore] = useState(() => Boolean(filters.min || filters.max || filters.year || filters.sold));
   const requestId = useRef(0);
 
   const setFilter = useCallback(
@@ -192,7 +193,7 @@ export default function Browse() {
         </div>
 
         {showMore && (
-          <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:max-w-2xl">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-center">
             <DebouncedInput
               type="number"
               min="0"
@@ -223,6 +224,15 @@ export default function Browse() {
               value={filters.year}
               onCommit={commitYear}
             />
+            <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1 py-2 text-sm font-medium text-gray-700">
+              <input
+                type="checkbox"
+                checked={filters.sold === '1'}
+                onChange={(e) => setFilter('sold', e.target.checked ? '1' : '')}
+                className="h-4 w-4 rounded border-gray-300 text-brand-700 focus:ring-brand-600"
+              />
+              Show sold vehicles
+            </label>
           </div>
         )}
       </div>

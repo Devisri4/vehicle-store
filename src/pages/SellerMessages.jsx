@@ -10,7 +10,9 @@ import {
   inputClass,
   smallButtonClass,
 } from '../components/ui.jsx';
+import ConversationThread from '../components/ConversationThread.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { loadReplies } from '../lib/replies.js';
 import { supabase } from '../lib/supabase.js';
 import usePageTitle from '../lib/usePageTitle.js';
 import { formatDate } from '../lib/vehicles.js';
@@ -23,23 +25,28 @@ export default function SellerMessages() {
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState('loading');
   const [vehicleId, setVehicleId] = useState('all');
+  const [replies, setReplies] = useState({});
 
   useEffect(() => {
     supabase
       .from('messages')
-      .select('id, sender_name, email, message, created_at, vehicles!inner(id, title, seller_id)')
+      .select('id, sender_id, sender_name, email, message, created_at, vehicles!inner(id, title, seller_id)')
       .eq('vehicles.seller_id', user.id)
       .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error) {
           console.error('Failed to load messages:', error);
           setStatus('error');
-        } else {
-          setMessages(data);
-          setStatus('ready');
+          return;
         }
+        setReplies(await loadReplies(data.map((m) => m.id)));
+        setMessages(data);
+        setStatus('ready');
       });
   }, [user.id]);
+
+  const addReply = (reply) =>
+    setReplies((current) => ({ ...current, [reply.message_id]: [...(current[reply.message_id] ?? []), reply] }));
 
   // One entry per vehicle that has enquiries, for the filter dropdown
   const vehicles = [...new Map(messages.map((m) => [m.vehicles.id, m.vehicles.title])).entries()];
@@ -114,11 +121,18 @@ export default function SellerMessages() {
                   {m.message}
                 </p>
 
+                <ConversationThread
+                  message={m}
+                  replies={replies[m.id]}
+                  currentUserId={user.id}
+                  onReplySent={addReply}
+                />
+
                 <a
                   href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.vehicles.title}`)}`}
-                  className={`${smallButtonClass} mt-4`}
+                  className={`${smallButtonClass} mt-3`}
                 >
-                  <Mail className="h-4 w-4" aria-hidden="true" /> Reply by email
+                  <Mail className="h-4 w-4" aria-hidden="true" /> Or reply by email
                 </a>
               </li>
             ))}

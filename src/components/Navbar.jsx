@@ -10,6 +10,7 @@ const GUEST_LINKS = [{ to: '/dashboard', label: 'Browse' }];
 const LINKS_BY_ROLE = {
   buyer: [
     { to: '/dashboard', label: 'Browse' },
+    { to: '/saved', label: 'Saved' },
     { to: '/enquiries', label: 'My Enquiries' },
   ],
   seller: [

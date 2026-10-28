@@ -11,15 +11,48 @@ import {
   MapPin,
   MessageSquare,
   Pencil,
+  RotateCcw,
   ShieldCheck,
+  Tag,
+  UserRound,
 } from 'lucide-react';
 import ContactSellerForm from '../components/ContactSellerForm.jsx';
+import FavoriteButton from '../components/FavoriteButton.jsx';
 import PhotoGallery from '../components/PhotoGallery.jsx';
-import { Badge, Card, EmptyState, Skeleton, primaryButtonClass } from '../components/ui.jsx';
+import { Badge, Card, EmptyState, Skeleton, primaryButtonClass, secondaryButtonClass } from '../components/ui.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useFeedback } from '../context/FeedbackContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import usePageTitle from '../lib/usePageTitle.js';
-import { formatDate, formatPrice } from '../lib/vehicles.js';
+import { formatDate, formatPrice, setVehicleStatus } from '../lib/vehicles.js';
+
+// Public seller summary from the seller_card() database function (name, join date, listing count only)
+function SellerCard({ sellerId }) {
+  const [seller, setSeller] = useState(null);
+
+  useEffect(() => {
+    supabase.rpc('seller_card', { seller: sellerId }).then(({ data, error }) => {
+      if (error) console.error('Failed to load seller:', error);
+      setSeller(data?.[0] ?? null);
+    });
+  }, [sellerId]);
+
+  if (!seller) return null;
+  return (
+    <Card className="flex items-center gap-4 p-5">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white">
+        <UserRound className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Sold by</p>
+        <p className="truncate font-semibold text-gray-900">{seller.name}</p>
+        <p className="text-sm text-gray-500">
+          Member since {formatDate(seller.member_since)} · {seller.listings} listing{seller.listings === 1 ? '' : 's'}
+        </p>
+      </div>
+    </Card>
+  );
+}
 
 function DetailSkeleton() {
   return (
@@ -46,10 +79,33 @@ function DetailSkeleton() {
 export default function VehicleDetail() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { confirm, toast } = useFeedback();
   const location = useLocation();
   const [vehicle, setVehicle] = useState(null);
   const [status, setStatus] = useState('loading');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   usePageTitle(status === 'missing' ? 'Vehicle not found' : vehicle?.title);
+
+  async function toggleSold() {
+    const nextStatus = vehicle.status === 'sold' ? 'available' : 'sold';
+    if (nextStatus === 'sold') {
+      const ok = await confirm({
+        title: 'Mark this vehicle as sold?',
+        message: 'It will be hidden from Browse and buyers can no longer send new enquiries. You can undo this.',
+        confirmLabel: 'Mark as sold',
+      });
+      if (!ok) return;
+    }
+    setUpdatingStatus(true);
+    const changed = await setVehicleStatus(vehicle.id, nextStatus);
+    setUpdatingStatus(false);
+    if (!changed) {
+      toast('Could not update the listing. Please try again.', 'error');
+      return;
+    }
+    setVehicle({ ...vehicle, status: nextStatus });
+    toast(nextStatus === 'sold' ? 'Marked as sold.' : 'Listing is available again.');
+  }
 
   useEffect(() => {
     supabase
@@ -97,6 +153,7 @@ export default function VehicleDetail() {
   }
 
   const isOwner = user?.id === vehicle.seller_id;
+  const sold = vehicle.status === 'sold';
   const specs = [
     { icon: Calendar, label: 'Year', value: vehicle.year },
     { icon: CarFront, label: 'Type', value: vehicle.type },
@@ -141,19 +198,29 @@ export default function VehicleDetail() {
         <div className="lg:col-span-2">
           <div className="space-y-6 lg:sticky lg:top-24">
             <Card className="p-6">
-              <div className="flex flex-wrap gap-2">
-                <Badge tone="brand">{vehicle.type}</Badge>
-                <Badge tone="neutral">{vehicle.condition}</Badge>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {sold && <Badge tone="dark">Sold</Badge>}
+                  <Badge tone="brand">{vehicle.type}</Badge>
+                  <Badge tone="neutral">{vehicle.condition}</Badge>
+                </div>
+                {!isOwner && <FavoriteButton vehicleId={vehicle.id} variant="button" className="shrink-0 px-3 py-1.5" />}
               </div>
               <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{vehicle.title}</h1>
               <p className="mt-2 flex items-center gap-1.5 text-sm text-gray-500">
                 <MapPin className="h-4 w-4" aria-hidden="true" /> {vehicle.location}
               </p>
               <div className="mt-6 rounded-xl bg-brand-50/60 px-5 py-4 ring-1 ring-inset ring-brand-100">
-                <p className="text-xs font-medium uppercase tracking-wide text-brand-700/70">Asking price</p>
-                <p className="mt-1 text-3xl font-bold tracking-tight text-brand-800">{formatPrice(vehicle.price)}</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-brand-700/70">
+                  {sold ? 'Last asking price' : 'Asking price'}
+                </p>
+                <p className={`mt-1 text-3xl font-bold tracking-tight ${sold ? 'text-gray-500' : 'text-brand-800'}`}>
+                  {formatPrice(vehicle.price)}
+                </p>
               </div>
             </Card>
+
+            <SellerCard sellerId={vehicle.seller_id} />
 
             <Card className="p-6">
               {isOwner ? (
@@ -161,9 +228,36 @@ export default function VehicleDetail() {
                   <h2 className="flex items-center gap-2 font-semibold text-gray-900">
                     <BadgeCheck className="h-5 w-5 text-brand-600" aria-hidden="true" /> This is your listing
                   </h2>
-                  <p className="mt-2 text-sm text-gray-500">Buyers can contact you from this page.</p>
-                  <Link to={`/vehicles/${vehicle.id}/edit`} className={`${primaryButtonClass} mt-5 w-full`}>
-                    <Pencil className="h-4 w-4" aria-hidden="true" /> Edit listing
+                  <p className="mt-2 text-sm text-gray-500">
+                    {sold
+                      ? 'Marked as sold: hidden from Browse and closed to new enquiries.'
+                      : 'Buyers can contact you from this page.'}
+                  </p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <Link to={`/vehicles/${vehicle.id}/edit`} className={primaryButtonClass}>
+                      <Pencil className="h-4 w-4" aria-hidden="true" /> Edit listing
+                    </Link>
+                    <button type="button" onClick={toggleSold} disabled={updatingStatus} className={secondaryButtonClass}>
+                      {sold ? (
+                        <>
+                          <RotateCcw className="h-4 w-4" aria-hidden="true" /> Mark as available
+                        </>
+                      ) : (
+                        <>
+                          <Tag className="h-4 w-4" aria-hidden="true" /> Mark as sold
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : sold ? (
+                <>
+                  <h2 className="flex items-center gap-2 font-semibold text-gray-900">
+                    <Tag className="h-5 w-5 text-gray-500" aria-hidden="true" /> This vehicle has been sold
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-500">The seller is no longer taking enquiries for it.</p>
+                  <Link to="/dashboard" className={`${primaryButtonClass} mt-5 w-full`}>
+                    Browse similar vehicles
                   </Link>
                 </>
               ) : (
