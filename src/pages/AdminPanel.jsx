@@ -56,7 +56,8 @@ export default function AdminPanel() {
       supabase.from('profiles').select('id, name, email, role, created_at').order('created_at', { ascending: false }),
       supabase
         .from('vehicles')
-        .select('id, title, price, image_paths, status, created_at, seller:profiles(name, email)')
+        // Named foreign key: favorites is a second vehicles<->profiles link, so the plain embed is ambiguous
+        .select('id, title, price, image_paths, status, created_at, seller:profiles!vehicles_seller_id_fkey(name, email)')
         .order('created_at', { ascending: false }),
       supabase
         .from('messages')
