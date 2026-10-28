@@ -8,6 +8,7 @@ import Login from './pages/Login.jsx';
 import MyVehicles from './pages/MyVehicles.jsx';
 import Placeholder from './pages/Placeholder.jsx';
 import PostVehicle from './pages/PostVehicle.jsx';
+import SellerMessages from './pages/SellerMessages.jsx';
 import Signup from './pages/Signup.jsx';
 import VehicleDetail from './pages/VehicleDetail.jsx';
 
@@ -29,10 +30,7 @@ export default function App() {
 
         <Route element={<ProtectedRoute roles={['seller']} />}>
           <Route path="/seller" element={<MyVehicles />} />
-          <Route
-            path="/seller/messages"
-            element={<Placeholder title="Messages" description="Enquiries from buyers about your vehicles." />}
-          />
+          <Route path="/seller/messages" element={<SellerMessages />} />
           <Route path="/post" element={<PostVehicle />} />
           <Route path="/vehicles/:id/edit" element={<EditVehicle />} />
         </Route>

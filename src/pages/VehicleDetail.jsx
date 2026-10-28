@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, CarFront, MapPin, MessageSquare, Pencil } from 'lucide-react';
+import ContactSellerForm from '../components/ContactSellerForm.jsx';
 import PhotoGallery from '../components/PhotoGallery.jsx';
 import { EmptyState, primaryButtonClass } from '../components/ui.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -97,7 +98,7 @@ export default function VehicleDetail() {
                   <MessageSquare className="h-5 w-5 text-brand-600" aria-hidden="true" /> Contact the seller
                 </h2>
                 {user ? (
-                  <p className="mt-2 text-sm text-gray-500">Messaging is coming in the next update.</p>
+                  <ContactSellerForm vehicle={vehicle} />
                 ) : (
                   <>
                     <p className="mt-2 text-sm text-gray-500">Log in to send the seller a message.</p>
