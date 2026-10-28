@@ -12,8 +12,10 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: process.env.E2E_BASE_URL || 'https://vehicle-store-nine.vercel.app',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    // Record every test so runs can be watched afterwards (videos + step-by-step traces in the report)
+    video: 'on',
+    trace: 'on',
+    screenshot: 'on',
   },
   projects: [
     { name: 'desktop-chrome', use: { ...devices['Desktop Chrome'] }, testIgnore: /responsive\.spec\.js/ },

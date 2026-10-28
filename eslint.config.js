@@ -24,8 +24,13 @@ export default [
     },
   },
   {
-    // Vercel serverless functions, Playwright tests and config files run in Node
-    files: ['api/**/*.js', 'e2e/**/*.js', '*.config.js'],
+    // Vercel serverless functions and config files run in Node
+    files: ['api/**/*.js', '*.config.js'],
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: globals.node },
+  },
+  {
+    // Playwright tests run in Node, but page.evaluate() callbacks run in the browser
+    files: ['e2e/**/*.js'],
+    languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: { ...globals.node, ...globals.browser } },
   },
 ];
