@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default [
-  { ignores: ['dist'] },
+  { ignores: ['dist', 'playwright-report', 'test-results'] },
   js.configs.recommended,
   {
     files: ['src/**/*.{js,jsx}'],
@@ -24,8 +24,8 @@ export default [
     },
   },
   {
-    // Vercel serverless functions and config files run in Node
-    files: ['api/**/*.js', '*.config.js'],
+    // Vercel serverless functions, Playwright tests and config files run in Node
+    files: ['api/**/*.js', 'e2e/**/*.js', '*.config.js'],
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: globals.node },
   },
 ];

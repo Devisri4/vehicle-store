@@ -17,5 +17,11 @@ export default async function handler(req, res) {
     console.error('health: database check failed', error);
     return res.status(503).json({ ok: false, error: 'Database unavailable.' });
   }
-  return res.status(200).json({ ok: true, vehicles: count, checkedAt: new Date().toISOString() });
+  // The deployed commit lets the end-to-end test workflow wait until a new push is actually live
+  return res.status(200).json({
+    ok: true,
+    vehicles: count,
+    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
+    checkedAt: new Date().toISOString(),
+  });
 }

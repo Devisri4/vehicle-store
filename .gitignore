@@ -7,5 +7,9 @@ dist/
 .env.*
 !.env.example
 
+# Playwright output
+playwright-report/
+test-results/
+
 *.log
 .DS_Store
