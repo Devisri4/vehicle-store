@@ -17,8 +17,6 @@ const FEATURES = [
   { icon: MessageSquare, title: 'Direct messaging', text: 'Buyers reach sellers directly. No middlemen, no hidden fees.' },
 ];
 
-const HIGHLIGHTS = ['Real sellers', 'Up to 4 photos per listing', 'Free to list'];
-
 const ctaPrimary =
   'inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-brand-800 shadow-sm transition hover:bg-brand-50 active:scale-[0.98]';
 const ctaSecondary =
@@ -72,14 +70,6 @@ export default function Home() {
                   Logged in as <strong className="font-semibold text-white">{profile.name}</strong> ({profile.role})
                 </p>
               )}
-              <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-brand-100/80">
-                {HIGHLIGHTS.map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-brand-300" aria-hidden="true" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
               {import.meta.env.DEV && <ConnectionStatus />}
             </div>
 
