@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CarFront, Eye, Pencil, Plus, Trash2, TriangleAlert } from 'lucide-react';
-import { EmptyState, FormMessage, PageHeader, primaryButtonClass } from '../components/ui.jsx';
+import { CarFront, Eye, Images, Pencil, Plus, Trash2, TriangleAlert } from 'lucide-react';
+import {
+  Badge,
+  EmptyState,
+  FormMessage,
+  ListSkeleton,
+  PageHeader,
+  cardClass,
+  primaryButtonClass,
+  smallButtonClass,
+  smallDangerButtonClass,
+} from '../components/ui.jsx';
 import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import { formatDate, formatPrice, removeVehicleImages } from '../lib/vehicles.js';
-
-const actionClass =
-  'inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50';
 
 // Replaces the original client/seller-dashboard.html (which was hard-coded to seller id 1)
 export default function MyVehicles() {
@@ -79,7 +86,7 @@ export default function MyVehicles() {
         </div>
       )}
 
-      {status === 'loading' && <p className="py-16 text-center text-sm text-gray-500">Loading your vehicles…</p>}
+      {status === 'loading' && <ListSkeleton />}
 
       {status === 'error' && (
         <EmptyState icon={TriangleAlert} title="Could not load your vehicles" text="Please refresh the page to try again." />
@@ -99,33 +106,39 @@ export default function MyVehicles() {
           {vehicles.map((vehicle) => (
             <li
               key={vehicle.id}
-              className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
+              className={`${cardClass} flex flex-col gap-5 p-4 transition hover:border-gray-300 hover:shadow-card-hover sm:flex-row sm:items-center`}
             >
-              <VehicleImage
-                path={vehicle.image_paths[0]}
-                alt={vehicle.title}
-                className="aspect-[4/3] w-full rounded-lg sm:w-40"
-              />
+              <div className="relative shrink-0 overflow-hidden rounded-xl sm:w-44">
+                <VehicleImage path={vehicle.image_paths[0]} alt={vehicle.title} className="aspect-[4/3] w-full" />
+                {vehicle.image_paths.length > 1 && (
+                  <Badge tone="dark" className="absolute bottom-2 right-2">
+                    <Images className="h-3.5 w-3.5" aria-hidden="true" /> {vehicle.image_paths.length}
+                  </Badge>
+                )}
+              </div>
               <div className="min-w-0 flex-1">
-                <h3 className="truncate font-semibold text-gray-900">{vehicle.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {vehicle.year} · {vehicle.type} · {vehicle.condition} · {vehicle.location}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="brand">{vehicle.type}</Badge>
+                  <Badge tone="neutral">{vehicle.condition}</Badge>
+                </div>
+                <h3 className="mt-2 truncate text-lg font-semibold text-gray-900">{vehicle.title}</h3>
+                <p className="mt-0.5 text-sm text-gray-500">
+                  {vehicle.year} · {vehicle.location} · Listed {formatDate(vehicle.created_at)}
                 </p>
-                <p className="mt-2 text-lg font-bold text-brand-700">{formatPrice(vehicle.price)}</p>
-                <p className="text-xs text-gray-400">Listed {formatDate(vehicle.created_at)}</p>
+                <p className="mt-2 text-xl font-bold tracking-tight text-gray-900">{formatPrice(vehicle.price)}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link to={`/vehicles/${vehicle.id}`} className={actionClass}>
+                <Link to={`/vehicles/${vehicle.id}`} className={smallButtonClass}>
                   <Eye className="h-4 w-4" aria-hidden="true" /> View
                 </Link>
-                <Link to={`/vehicles/${vehicle.id}/edit`} className={actionClass}>
+                <Link to={`/vehicles/${vehicle.id}/edit`} className={smallButtonClass}>
                   <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
                 </Link>
                 <button
                   type="button"
                   onClick={() => handleDelete(vehicle)}
                   disabled={deletingId === vehicle.id}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                  className={smallDangerButtonClass}
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                   {deletingId === vehicle.id ? 'Deleting…' : 'Delete'}

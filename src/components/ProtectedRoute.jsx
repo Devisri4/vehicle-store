@@ -8,12 +8,20 @@ export default function ProtectedRoute({ roles }) {
   const location = useLocation();
 
   if (!supabaseConfigured) return <Notice text="The app is not connected to Supabase yet." />;
-  if (loading) return <Notice text="Loading…" />;
+  if (loading) return <PageSpinner />;
   if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   if (!profile) return <Notice text="Your account profile could not be loaded. Please log out and try again." />;
   if (roles && !roles.includes(profile.role)) return <Navigate to={dashboardPath(profile.role)} replace />;
 
   return <Outlet />;
+}
+
+function PageSpinner() {
+  return (
+    <div className="flex justify-center py-24" role="status" aria-label="Loading">
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-100 border-t-brand-700" />
+    </div>
+  );
 }
 
 function Notice({ text }) {

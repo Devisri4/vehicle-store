@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CarFront, MessageSquare, Trash2, TriangleAlert, Users } from 'lucide-react';
-import { EmptyState, FormMessage, PageHeader } from '../components/ui.jsx';
+import { CarFront, MessageSquare, Store, Trash2, TriangleAlert, Users } from 'lucide-react';
+import {
+  Badge,
+  EmptyState,
+  FormMessage,
+  PageHeader,
+  Skeleton,
+  TableSkeleton,
+  cardClass,
+  smallDangerButtonClass,
+} from '../components/ui.jsx';
 import VehicleImage from '../components/VehicleImage.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
@@ -13,17 +22,11 @@ const TABS = [
   { key: 'messages', label: 'Messages', icon: MessageSquare },
 ];
 
-const ROLE_STYLES = {
-  admin: 'bg-purple-50 text-purple-700',
-  seller: 'bg-brand-50 text-brand-700',
-  buyer: 'bg-gray-100 text-gray-700',
-};
+const ROLE_TONES = { admin: 'purple', seller: 'brand', buyer: 'neutral' };
 
-const deleteButtonClass =
-  'inline-flex items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1 text-sm font-medium text-red-600 ' +
-  'transition hover:bg-red-50 disabled:opacity-60';
-const thClass = 'px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500';
-const tdClass = 'px-4 py-3 text-sm text-gray-700';
+const deleteButtonClass = smallDangerButtonClass;
+const thClass = 'px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500';
+const tdClass = 'px-5 py-4 text-sm text-gray-700';
 
 // Deletion of user accounts needs the secret key, so it goes through the server function in api/delete-user.js
 async function deleteUserAccount(userId) {
@@ -109,12 +112,27 @@ export default function AdminPanel() {
   }
 
   const counts = { users: data.users.length, vehicles: data.vehicles.length, messages: data.messages.length };
+  const stats = [
+    { label: 'Users', value: counts.users, icon: Users },
+    { label: 'Sellers', value: data.users.filter((u) => u.role === 'seller').length, icon: Store },
+    { label: 'Active listings', value: counts.vehicles, icon: CarFront },
+    { label: 'Messages', value: counts.messages, icon: MessageSquare },
+  ];
 
   return (
     <>
       <PageHeader title="Admin panel" description="Manage all users, vehicle listings and messages." />
 
-      {status === 'loading' && <p className="py-16 text-center text-sm text-gray-500">Loading…</p>}
+      {status === 'loading' && (
+        <div className="space-y-8" role="status" aria-label="Loading">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} className="h-24 rounded-2xl" />
+            ))}
+          </div>
+          <TableSkeleton />
+        </div>
+      )}
 
       {status === 'error' && (
         <EmptyState icon={TriangleAlert} title="Could not load admin data" text="Please refresh the page to try again." />
@@ -122,16 +140,16 @@ export default function AdminPanel() {
 
       {status === 'ready' && (
         <>
-          <div className="mb-8 grid gap-4 sm:grid-cols-3">
-            {TABS.map(({ key, label, icon: Icon }) => (
-              <div key={key} className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {stats.map(({ label, value, icon: Icon }) => (
+              <div key={label} className={`${cardClass} flex items-center justify-between p-5`}>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">{label}</p>
+                  <p className="mt-1 text-3xl font-bold tracking-tight text-gray-900">{value}</p>
+                </div>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <div>
-                  <p className="text-sm text-gray-500">{label}</p>
-                  <p className="text-2xl font-semibold text-gray-900">{counts[key]}</p>
-                </div>
               </div>
             ))}
           </div>
@@ -161,7 +179,7 @@ export default function AdminPanel() {
             </div>
           )}
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className={`${cardClass} overflow-x-auto`}>
             {tab === 'users' && (
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -184,9 +202,9 @@ export default function AdminPanel() {
                       </td>
                       <td className={tdClass}>{u.email}</td>
                       <td className={tdClass}>
-                        <span className={`rounded-md px-2 py-0.5 text-xs font-medium capitalize ${ROLE_STYLES[u.role]}`}>
+                        <Badge tone={ROLE_TONES[u.role]} className="capitalize">
                           {u.role}
-                        </span>
+                        </Badge>
                       </td>
                       <td className={`${tdClass} whitespace-nowrap`}>{formatDate(u.created_at)}</td>
                       <td className={`${tdClass} text-right`}>

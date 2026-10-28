@@ -34,3 +34,7 @@ Never commit real keys; never expose the service-role key with a `VITE_` prefix.
 - **StackBlitz**: open `https://stackblitz.com/github/Devisri4/vehicle-store` — it installs and runs `npm run dev`.
 - **Vercel**: every push to GitHub builds and deploys automatically.
 - Locally (if Node 18+ is available): `npm install` then `npm run dev`.
+
+## Image credits
+
+`public/images/hero-car.jpg` and `public/images/auth-car.jpg` are from [Unsplash](https://unsplash.com) (photo IDs `1552519507-da3b142c6e3d` and `1503376780353-7e6692767b70`), used under the [Unsplash License](https://unsplash.com/license).

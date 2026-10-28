@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CarFront } from 'lucide-react';
-import { EmptyState, PageHeader, primaryButtonClass } from '../components/ui.jsx';
+import { EmptyState, PageHeader, Skeleton, primaryButtonClass } from '../components/ui.jsx';
 import VehicleForm from '../components/VehicleForm.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
@@ -45,7 +45,17 @@ export default function EditVehicle() {
     navigate('/seller', { state: { flash: 'Vehicle updated.' } });
   }
 
-  if (status === 'loading') return <p className="py-24 text-center text-sm text-gray-500">Loading…</p>;
+  if (status === 'loading') {
+    return (
+      <div className="space-y-6" role="status" aria-label="Loading vehicle">
+        <Skeleton className="h-9 w-56" />
+        <div className="grid gap-8 lg:grid-cols-3">
+          <Skeleton className="h-[32rem] rounded-2xl lg:col-span-2" />
+          <Skeleton className="h-72 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
   if (status === 'unavailable') {
     return (
       <EmptyState

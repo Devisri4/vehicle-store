@@ -38,7 +38,7 @@ export default function ContactSellerForm({ vehicle }) {
 
   if (sent) {
     return (
-      <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+      <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
         <p className="flex items-center gap-2 font-semibold">
           <CircleCheck className="h-5 w-5" aria-hidden="true" /> Message sent
         </p>
@@ -49,7 +49,7 @@ export default function ContactSellerForm({ vehicle }) {
             setMessage('');
             setSent(false);
           }}
-          className="mt-3 font-medium text-green-900 underline hover:no-underline"
+          className="mt-3 font-medium text-emerald-900 underline hover:no-underline"
         >
           Send another message
         </button>

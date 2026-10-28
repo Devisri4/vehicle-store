@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ImagePlus, Star, X } from 'lucide-react';
 import { IMAGE_TYPES, MAX_PHOTOS, VEHICLE_CONDITIONS, VEHICLE_TYPES, validateImage } from '../lib/vehicles.js';
-import { FormMessage, inputClass, primaryButtonClass, secondaryButtonClass } from './ui.jsx';
+import { CardHeader, FormMessage, cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from './ui.jsx';
 import VehicleImage from './VehicleImage.jsx';
 
 const EMPTY = { title: '', price: '', year: '', location: '', type: 'Car', condition: 'Good', description: '' };
@@ -86,8 +86,8 @@ export default function VehicleForm({ initial, existingImagePaths = [], submitLa
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3">
-      <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-        <h2 className="text-base font-semibold text-gray-900">Vehicle details</h2>
+      <div className={`${cardClass} space-y-5 p-6 sm:p-8 lg:col-span-2`}>
+        <CardHeader title="Vehicle details" description="Clear, accurate details help buyers decide faster." />
         <div>
           <Label htmlFor="title">Title</Label>
           <input
@@ -173,18 +173,18 @@ export default function VehicleForm({ initial, existingImagePaths = [], submitLa
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+        <div className={`${cardClass} p-6`}>
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="text-base font-semibold text-gray-900">Photos</h2>
-            <span className="text-xs text-gray-500">
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
               {photos.length} / {MAX_PHOTOS}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {photos.map((photo, index) => (
-              <div key={photo.id} className="group relative overflow-hidden rounded-lg border border-gray-200">
+              <div key={photo.id} className="group relative overflow-hidden rounded-xl border border-gray-200">
                 {photo.preview ? (
                   <img src={photo.preview} alt={`Photo ${index + 1}`} className="aspect-[4/3] w-full object-cover" />
                 ) : (
@@ -217,7 +217,7 @@ export default function VehicleForm({ initial, existingImagePaths = [], submitLa
             {photos.length < MAX_PHOTOS && (
               <label
                 htmlFor="images"
-                className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-3 text-center transition hover:border-brand-400 ${
+                className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 text-center transition hover:border-brand-400 hover:bg-brand-50/40 ${
                   photos.length === 0 ? 'col-span-2 aspect-[2/1]' : 'aspect-[4/3]'
                 }`}
               >

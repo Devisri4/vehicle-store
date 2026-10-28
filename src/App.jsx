@@ -7,7 +7,7 @@ import EditVehicle from './pages/EditVehicle.jsx';
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import MyVehicles from './pages/MyVehicles.jsx';
-import Placeholder from './pages/Placeholder.jsx';
+import NotFound from './pages/NotFound.jsx';
 import PostVehicle from './pages/PostVehicle.jsx';
 import SellerMessages from './pages/SellerMessages.jsx';
 import Signup from './pages/Signup.jsx';
@@ -40,7 +40,7 @@ export default function App() {
           <Route path="/admin" element={<AdminPanel />} />
         </Route>
 
-        <Route path="*" element={<Placeholder title="Page not found" />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
