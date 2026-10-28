@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom';
 import ConnectionStatus from '../components/ConnectionStatus.jsx';
+import { dashboardPath, useAuth } from '../context/AuthContext.jsx';
+
+const buttonBase = 'rounded-lg px-5 py-3 font-semibold text-white transition sm:px-7 sm:py-3.5';
 
 // Port of the original client/index.html landing page
 export default function Home() {
+  const { profile, signOut } = useAuth();
+
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-r from-brand-light to-brand-lighter text-gray-800">
       <header className="bg-brand px-5 py-10 text-center text-white">
@@ -19,19 +24,31 @@ export default function Home() {
         <h2 className="mb-4 text-2xl font-semibold text-brand sm:text-3xl">Your Trusted Vehicle Marketplace</h2>
 
         <div className="mt-8 flex flex-wrap justify-center gap-5">
-          <Link
-            to="/signup"
-            className="rounded-lg bg-go px-5 py-3 font-semibold text-white transition hover:bg-go-dark sm:px-7 sm:py-3.5"
-          >
-            📝 Sign Up
-          </Link>
-          <Link
-            to="/login"
-            className="rounded-lg bg-accent px-5 py-3 font-semibold text-white transition hover:bg-accent-dark sm:px-7 sm:py-3.5"
-          >
-            🔐 Login
-          </Link>
+          {profile ? (
+            <>
+              <Link to={dashboardPath(profile.role)} className={`${buttonBase} bg-go hover:bg-go-dark`}>
+                🚘 Go to my dashboard
+              </Link>
+              <button type="button" onClick={signOut} className={`${buttonBase} bg-accent hover:bg-accent-dark`}>
+                🚪 Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/signup" className={`${buttonBase} bg-go hover:bg-go-dark`}>
+                📝 Sign Up
+              </Link>
+              <Link to="/login" className={`${buttonBase} bg-accent hover:bg-accent-dark`}>
+                🔐 Login
+              </Link>
+            </>
+          )}
         </div>
+        {profile && (
+          <p className="mt-4 text-sm text-gray-600">
+            Logged in as <strong>{profile.name}</strong> ({profile.role})
+          </p>
+        )}
 
         <ConnectionStatus />
       </main>
