@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import AppLayout from './components/AppLayout.jsx';
+import AdminPanel from './pages/AdminPanel.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Browse from './pages/Browse.jsx';
 import EditVehicle from './pages/EditVehicle.jsx';
@@ -36,10 +37,7 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute roles={['admin']} />}>
-          <Route
-            path="/admin"
-            element={<Placeholder title="Admin panel" description="Manage all users and vehicle listings." />}
-          />
+          <Route path="/admin" element={<AdminPanel />} />
         </Route>
 
         <Route path="*" element={<Placeholder title="Page not found" />} />
