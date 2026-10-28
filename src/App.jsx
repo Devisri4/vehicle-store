@@ -1,10 +1,15 @@
 import { Route, Routes } from 'react-router-dom';
 import AppLayout from './components/AppLayout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Browse from './pages/Browse.jsx';
+import EditVehicle from './pages/EditVehicle.jsx';
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
+import MyVehicles from './pages/MyVehicles.jsx';
 import Placeholder from './pages/Placeholder.jsx';
+import PostVehicle from './pages/PostVehicle.jsx';
 import Signup from './pages/Signup.jsx';
+import VehicleDetail from './pages/VehicleDetail.jsx';
 
 // Routes mirror the original pages (see README for the mapping).
 export default function App() {
@@ -15,30 +20,21 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
 
       <Route element={<AppLayout />}>
-        <Route path="/vehicles/:id" element={<Placeholder title="Vehicle details" />} />
+        <Route path="/vehicles/:id" element={<VehicleDetail />} />
 
         {/* Any logged-in user */}
         <Route element={<ProtectedRoute />}>
-          <Route
-            path="/dashboard"
-            element={<Placeholder title="Available vehicles" description="Explore pre-owned vehicles from trusted sellers." />}
-          />
+          <Route path="/dashboard" element={<Browse />} />
         </Route>
 
         <Route element={<ProtectedRoute roles={['seller']} />}>
-          <Route
-            path="/seller"
-            element={<Placeholder title="My vehicles" description="Manage the vehicles you have listed for sale." />}
-          />
+          <Route path="/seller" element={<MyVehicles />} />
           <Route
             path="/seller/messages"
             element={<Placeholder title="Messages" description="Enquiries from buyers about your vehicles." />}
           />
-          <Route
-            path="/post"
-            element={<Placeholder title="Post a vehicle" description="Add a new vehicle listing with a photo." />}
-          />
-          <Route path="/vehicles/:id/edit" element={<Placeholder title="Edit vehicle" />} />
+          <Route path="/post" element={<PostVehicle />} />
+          <Route path="/vehicles/:id/edit" element={<EditVehicle />} />
         </Route>
 
         <Route element={<ProtectedRoute roles={['admin']} />}>

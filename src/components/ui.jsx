@@ -36,6 +36,21 @@ export function FormMessage({ message }) {
   );
 }
 
+export function EmptyState({ icon: Icon, title, text, action }) {
+  return (
+    <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
+      {Icon && (
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+          <Icon className="h-6 w-6" aria-hidden="true" />
+        </div>
+      )}
+      <h2 className="mt-4 text-base font-semibold text-gray-900">{title}</h2>
+      {text && <p className="mt-1 text-sm text-gray-500">{text}</p>}
+      {action && <div className="mt-6">{action}</div>}
+    </div>
+  );
+}
+
 export function PageHeader({ title, description, actions }) {
   return (
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
